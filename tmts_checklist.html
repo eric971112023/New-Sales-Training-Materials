@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TMTS 2026 參展觀摩評分表</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #F5F3EE; --surface: #FFFFFF; --surface2: #F0EDE8;
+    --border: #E0DBD3; --text: #1A1714; --text2: #6B6560; --text3: #A09B95;
+    --accent: #D85A30; --star: #F0A500; --star-empty: #DDD8D0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--text); color: #fff; padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 56px; position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-title { font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+  .topbar-sub { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: rgba(255,255,255,0.45); }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .btn { font-family: 'Noto Sans TC', sans-serif; font-size: 12px; padding: 6px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; background: transparent; color: #fff; transition: background 0.15s; white-space: nowrap; }
+  .btn:hover { background: rgba(255,255,255,0.1); }
+  .btn-accent { background: var(--accent); border-color: var(--accent); }
+  .btn-accent:hover { background: #bf4e27; }
+
+  /* ── TABS ── */
+  .tabs-wrap { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: flex-end; overflow-x: auto; scrollbar-width: none; }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tab { padding: 12px 20px 11px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; color: var(--text2); transition: color 0.15s, border-color 0.15s; user-select: none; display: flex; align-items: center; gap: 8px; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 500; }
+  .tab-score { font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--surface2); padding: 2px 6px; border-radius: 99px; color: var(--text2); }
+  .tab.active .tab-score { background: var(--accent); color: #fff; }
+
+  /* ── SHEET ── */
+  .sheet { display: none; padding: 2rem; max-width: 860px; margin: 0 auto; }
+  .sheet.active { display: block; }
+  .sheet-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; }
+  .sheet-name-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text3); margin-bottom: 4px; }
+  .sheet-name-input { font-family: 'Noto Sans TC', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); border: none; background: transparent; width: 100%; outline: none; border-bottom: 2px solid transparent; padding-bottom: 2px; transition: border-color 0.2s; }
+  .sheet-name-input:focus { border-bottom-color: var(--accent); }
+
+  /* ISO meta bar */
+  .iso-meta-bar {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 18px; margin-bottom: 1.5rem;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .iso-field label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); display: block; margin-bottom: 3px; }
+  .iso-field input {
+    font-family: 'Noto Sans TC', sans-serif; font-size: 13px; color: var(--text);
+    border: none; border-bottom: 1px solid var(--border); background: transparent;
+    width: 100%; outline: none; padding: 2px 0; transition: border-color 0.15s;
+  }
+  .iso-field input:focus { border-bottom-color: var(--accent); }
+  .iso-field input:hover { border-bottom-color: var(--text3); }
+  .iso-field span { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); }
+
+  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; min-width: 150px; text-align: center; flex-shrink: 0; }
+  .score-big { font-family: 'JetBrains Mono', monospace; font-size: 30px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .score-max { font-size: 13px; color: var(--text3); }
+  .score-label { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .score-bar-outer { height: 4px; background: var(--surface2); border-radius: 99px; margin-top: 8px; overflow: hidden; }
+  .score-bar-inner { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s; }
+
+  /* ── SECTIONS ── */
+  .section-block { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.25rem; overflow: hidden; }
+  .section-head { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .cat-badge { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 99px; }
+  .section-title-text { font-size: 14px; font-weight: 500; }
+  .section-avg { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text3); }
+
+  .q-row { padding: 16px 20px; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+  .q-row:last-child { border-bottom: none; }
+  .q-row.missing { background: #FFF5F5; }
+  .q-row.missing .q-text { color: #E24B4A; }
+  .q-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .q-text { font-size: 14px; line-height: 1.6; flex: 1; }
+  .q-hint { font-size: 11px; color: var(--text3); margin-top: 2px; line-height: 1.5; }
+  .q-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); flex-shrink: 0; padding-top: 4px; }
+
+  .stars { display: flex; gap: 4px; align-items: center; margin-bottom: 10px; }
+  .star-zero { font-size: 12px; cursor: pointer; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--border); color: var(--text3); background: var(--surface); transition: all 0.12s; user-select: none; line-height: 1.4; font-family: 'Noto Sans TC', sans-serif; }
+  .star-zero:hover { border-color: #E24B4A; color: #E24B4A; }
+  .star-zero.active { background: #FFF0EE; border-color: #E24B4A; color: #E24B4A; font-weight: 500; }
+  .star { font-size: 26px; cursor: pointer; color: var(--star-empty); transition: color 0.1s, transform 0.1s; user-select: none; line-height: 1; }
+  .star:hover { transform: scale(1.15); }
+  .star.lit { color: var(--star); }
+  .star-label { font-size: 11px; color: var(--text3); margin-left: 6px; min-width: 60px; }
+
+  .q-note { width: 100%; font-family: 'Noto Sans TC', sans-serif; font-size: 12px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); resize: none; min-height: 34px; outline: none; transition: border-color 0.15s; line-height: 1.5; }
+  .q-note:focus { border-color: var(--accent); background: #fff; }
+  .q-note::placeholder { color: var(--text3); }
+
+  /* ── OVERVIEW ── */
+  .overview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 1.5rem; }
+  .overview-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; cursor: pointer; transition: border-color 0.15s, transform 0.1s; }
+  .overview-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .ov-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .ov-total { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; color: var(--accent); line-height: 1; }
+  .ov-max { font-size: 13px; color: var(--text3); font-weight: 400; }
+  .ov-answered { font-size: 11px; color: var(--text3); margin-top: 4px; }
+  .ov-bar-outer { height: 4px; background: var(--surface2); border-radius: 99px; margin-top: 8px; overflow: hidden; }
+  .ov-bar-inner { height: 100%; background: var(--accent); border-radius: 99px; }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 14px; padding: 2rem; width: 400px; max-width: 90vw; border: 1px solid var(--border); }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 0.5rem; }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 1.25rem; line-height: 1.6; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text3); display: block; margin-bottom: 4px; }
+  .modal-field input { width: 100%; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.15s; }
+  .modal-field input:focus { border-color: var(--accent); background: #fff; }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .modal-btns .btn { color: var(--text); border-color: var(--border); }
+  .modal-btns .btn-accent { color: #fff; }
+
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: #E24B4A; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity 0.25s, transform 0.25s; pointer-events: none; z-index: 300; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .delete-btn { font-size: 11px; padding: 3px 8px; background: transparent; border: 1px solid var(--border); border-radius: 5px; color: var(--text3); cursor: pointer; transition: all 0.15s; }
+  .delete-btn:hover { border-color: #E24B4A; color: #E24B4A; }
+
+  /* ════════════════════════════════
+     PRINT STYLES
+  ════════════════════════════════ */
+  @media print {
+    @page { margin: 12mm 10mm; size: A4; }
+    body { background: #fff !important; font-size: 10px; }
+    .topbar, .tabs-wrap, .sheet-header, .iso-meta-bar, .q-note, .delete-btn, .no-print { display: none !important; }
+    .sheet { display: none !important; padding: 0 !important; max-width: 100% !important; }
+    .sheet.print-target { display: block !important; }
+
+    /* ── COVER PAGE ── */
+    .print-cover {
+      display: flex !important;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 257mm;
+      page-break-after: always;
+      padding: 8mm 0;
+    }
+    .cover-top { border-bottom: 3px solid #1A1714; padding-bottom: 10mm; margin-bottom: 8mm; }
+    .cover-doc-no {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      color: #888; letter-spacing: 0.1em; margin-bottom: 6mm;
+    }
+    .cover-title { font-size: 26px; font-weight: 700; line-height: 1.3; margin-bottom: 3mm; }
+    .cover-subtitle { font-size: 13px; color: #555; }
+
+    .cover-info-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      gap: 6mm 10mm;
+      margin-bottom: 8mm;
+    }
+    .cover-info-item { border-bottom: 1px solid #ddd; padding-bottom: 3mm; }
+    .cover-info-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.08em; color: #999; margin-bottom: 2mm; }
+    .cover-info-value { font-size: 12px; color: #1A1714; min-height: 14px; }
+
+    /* sign table */
+    .cover-sign-table {
+      width: 100%; border-collapse: collapse; margin-bottom: 8mm;
+    }
+    .cover-sign-table th {
+      font-size: 9px; text-transform: uppercase; letter-spacing: 0.07em;
+      color: #fff; background: #1A1714 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      padding: 4px 8px; text-align: center; font-weight: 500;
+    }
+    .cover-sign-table td {
+      border: 1px solid #ccc; padding: 8px 10px; font-size: 11px;
+      text-align: center; height: 22mm; vertical-align: top; color: #1A1714;
+    }
+    .cover-sign-table td .sign-name { font-size: 11px; color: #1A1714; }
+    .cover-sign-table td .sign-line { border-bottom: 1px solid #bbb; margin: 4mm 2mm 2mm; height: 8mm; }
+    .cover-sign-table td .sign-date { font-size: 9px; color: #aaa; }
+
+    /* ISO clause ref */
+    .cover-clause-box {
+      border: 1px solid #ddd; border-radius: 4px; padding: 4mm 5mm;
+      background: #fafafa !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    }
+    .cover-clause-title { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #555; margin-bottom: 3mm; }
+    .cover-clause-row { display: flex !important; gap: 4mm; margin-bottom: 2mm; align-items: flex-start; }
+    .cover-clause-no { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #D85A30; flex-shrink: 0; width: 18mm; }
+    .cover-clause-desc { font-size: 9px; color: #555; line-height: 1.5; }
+
+    .cover-footer { font-size: 8px; color: #bbb; text-align: center; border-top: 1px solid #eee; padding-top: 3mm; }
+
+    /* ── CONTENT PAGES ── */
+    .print-content-header {
+      display: flex !important;
+      justify-content: space-between; align-items: center;
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1.5px solid #1A1714;
+    }
+    .pch-left { }
+    .pch-title { font-size: 13px; font-weight: 700; }
+    .pch-meta { font-size: 8px; color: #888; margin-top: 1mm; }
+    .pch-right { text-align: right; }
+    .pch-score { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; color: #D85A30; line-height: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .pch-score-lbl { font-size: 8px; color: #888; }
+
+    .section-block { border: 1px solid #ccc !important; border-radius: 5px !important; margin-bottom: 7px !important; page-break-inside: avoid; }
+    .section-head { padding: 6px 10px !important; background: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cat-badge { font-size: 8px !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .section-title-text { font-size: 10px !important; }
+    .section-avg { font-size: 9px !important; }
+
+    .q-row { padding: 6px 10px !important; page-break-inside: avoid; }
+    .q-top { margin-bottom: 2px !important; }
+    .q-text { font-size: 9px !important; }
+    .q-hint { font-size: 8px !important; }
+    .q-num { font-size: 8px !important; }
+    .stars { gap: 2px !important; margin-bottom: 2px !important; }
+    .star-zero { font-size: 8px !important; padding: 1px 5px !important; cursor: default !important; }
+    .star-zero.active { background: #FFF0EE !important; border-color: #E24B4A !important; color: #E24B4A !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .star { font-size: 12px !important; cursor: default !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .star.lit { color: #F0A500 !important; }
+    .star-label { font-size: 8px !important; }
+    .q-note { display: none !important; }
+    .print-note { display: block !important; font-size: 8px !important; padding: 2px 6px !important; border: 1px solid #ddd !important; border-radius: 2px !important; background: #fafafa !important; color: #444 !important; min-height: 14px !important; line-height: 1.4 !important; }
+
+    /* page footer */
+    .print-page-footer {
+      display: block !important;
+      margin-top: 6mm;
+      padding-top: 3mm;
+      border-top: 1px solid #eee;
+      font-size: 7.5px;
+      color: #bbb;
+      display: flex !important;
+      justify-content: space-between;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">TMTS 2026 參展觀摩評分表</div>
+    <div class="topbar-sub">Taiwan International Machine Tool Show · 台中國際展覽館</div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn" onclick="printCurrent()">📄 列印 / 儲存 PDF</button>
+    <button class="btn btn-accent" onclick="openModal()">＋ 新增攤位</button>
+  </div>
+</div>
+
+<div class="tabs-wrap" id="tabsWrap">
+  <div class="tab active" data-id="overview" onclick="switchTab('overview')">總覽</div>
+</div>
+
+<div id="sheets">
+  <div class="sheet active" id="sheet-overview">
+    <div style="padding:1rem 0 0.5rem">
+      <div style="font-size:22px;font-weight:700;margin-bottom:6px">攤位評分總覽</div>
+      <div style="font-size:13px;color:var(--text2)">每間攤位滿分 100 分（25 題 × 4 分）。填完所有題目後可列印含 ISO 封面的 PDF。</div>
+    </div>
+    <div class="overview-grid" id="overviewGrid">
+      <div style="border:2px dashed var(--border);border-radius:12px;padding:2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--text3);min-height:130px;transition:border-color 0.15s" onclick="createSheet()" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:28px">＋</div>
+        <div style="font-size:13px">新增攤位（點擊後直接編輯）</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 無新增視窗，直接由按鈕建立 -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+const QUESTIONS = [
+  { section:'攤位設計', color:'#1D9E75', bg:'#E1F5EE', items:[
+    { q:'攤位整體第一印象',                             hint:'0＝毫無吸引力　4＝非常吸睛，讓人想走進去' },
+    { q:'攤位識別度（從遠處是否容易找到）',             hint:'0＝走道上完全看不到　4＝遠遠就能辨識，標示醒目' },
+    { q:'訪客動線規劃流暢度',                           hint:'0＝雜亂無章　4＝動線清晰、引導自然' },
+    { q:'重點展品的陳列與凸顯程度',                     hint:'0＝重點不明　4＝主打品一眼就看到' },
+    { q:'品牌視覺一致性（燈光、顏色、背板）',           hint:'0＝風格混亂　4＝品牌感強烈一致' },
+    { q:'空間利用與比例感',                             hint:'0＝擁擠或過於空曠　4＝比例舒適、空間感佳' },
+  ]},
+  { section:'業務接待', color:'#185FA5', bg:'#E6F1FB', items:[
+    { q:'主動開場的積極程度',                           hint:'0＝完全被動等待　4＝主動、自然地搭話' },
+    { q:'產品說明的清晰度與說服力',                     hint:'0＝技術術語堆砌　4＝說明清楚且打動人心' },
+    { q:'技術人員與業務的分工默契',                     hint:'0＝各說各話　4＝配合順暢、補位即時' },
+    { q:'名片與客戶資料收集的系統化程度',               hint:'0＝隨意收名片　4＝有系統地記錄需求與聯絡資訊' },
+    { q:'結束對話的收尾技巧（有無留下具體下一步）',     hint:'0＝訪客離開時沒有任何後續　4＝明確約定後續聯絡或提供資料' },
+  ]},
+  { section:'現場展示', color:'#BA7517', bg:'#FAEEDA', items:[
+    { q:'技術亮點的可視化程度',                         hint:'0＝完全抽象難以理解　4＝讓人一眼看懂技術價值' },
+    { q:'互動體驗設計（讓訪客參與操作）',               hint:'0＝完全無互動　4＝訪客可親自體驗' },
+    { q:'型錄設計的專業度與可讀性',                     hint:'0＝粗糙難讀　4＝精美、資訊層次清晰' },
+    { q:'影片或螢幕展示的吸引力',                       hint:'0＝乏味或沒有影片　4＝內容精彩、節奏佳' },
+    { q:'數位導流工具的完整度（QR Code、LINE 等）',     hint:'0＝無任何數位工具　4＝多管道引流且清楚標示' },
+    { q:'攤位環境整潔度',                               hint:'0＝雜亂髒亂　4＝整潔有序、專業感強' },
+  ]},
+  { section:'國際化程度', color:'#534AB7', bg:'#EEEDFE', items:[
+    { q:'外語接待能力（英文、日文等）',                 hint:'0＝無法用外語溝通　4＝流利、專業' },
+    { q:'對外國訪客的接待積極度',                       hint:'0＝忽視外籍訪客　4＝主動迎接、應對得宜' },
+    { q:'型錄或產品說明的國際化程度',                   hint:'0＝沒有外文翻譯或錯誤百出　4＝用字正確且有不同語系版本' },
+  ]},
+  { section:'對我們的啟發', color:'#3B6D11', bg:'#EAF3DE', items:[
+    { q:'業務技巧對我們的可參考程度',                   hint:'0＝完全不適用　4＝有很多可直接套用的技巧' },
+    { q:'展示方式對我們的可借鏡程度',                   hint:'0＝完全無法借鏡　4＝很多方法可以移植到鑄造廠' },
+    { q:'攤位的國際化程度對我們的可參考程度',           hint:'0＝完全無參考價值　4＝很多國際化做法值得我們學習' },
+    { q:'有無帶回公司討論的具體想法',                   hint:'0＝完全沒有　4＝有 2 個以上明確可行動的點子' },
+    { q:'綜合評價：這間攤位值得我們學習的程度',         hint:'0＝幾乎沒有參考價值　4＝強烈建議公司深入研究' },
+  ]},
+];
+
+const STAR_LABELS = ['不適用／很差','較差','普通','不錯','很好'];
+const TOTAL_Q = 25;
+const MAX_SCORE = 100;
+const DOC_NO = 'SLS-F-001';
+const DOC_REV = 'Rev.00';
+const DOC_DATE = '2026-03-25';
+
+let sheets = {}, tabOrder = [], currentTab = 'overview';
+
+function openModal() { createSheet(); }
+function closeModal() {}
+
+function createSheet() {
+  const id = 'sh_' + Date.now();
+  const today = new Date().toLocaleDateString('zh-TW');
+  sheets[id] = { name: '新攤位', author: '', dept: '', date: today, scores: {}, notes: {} };
+  tabOrder.push(id);
+  renderTab(id, '新攤位');
+  renderSheet(id);
+  switchTab(id);
+  updateOverview();
+  // 自動聚焦攤位名稱欄位讓使用者直接改
+  setTimeout(() => {
+    const nameInput = document.querySelector(`#sheet-${id} .sheet-name-input`);
+    if (nameInput) { nameInput.focus(); nameInput.select(); }
+  }, 50);
+}
+
+function renderTab(id, name) {
+  const wrap = document.getElementById('tabsWrap');
+  const t = document.createElement('div');
+  t.className = 'tab'; t.dataset.id = id;
+  t.innerHTML = `<span class="tab-label">${esc(name)}</span><span class="tab-score" id="ts-${id}">0/100</span>`;
+  t.onclick = () => switchTab(id);
+  wrap.appendChild(t);
+}
+
+function renderSheet(id) {
+  const d = sheets[id];
+  const el = document.createElement('div');
+  el.className = 'sheet'; el.id = `sheet-${id}`;
+
+  // ── PRINT COVER (hidden on screen) ──
+  let html = `
+  <div class="print-cover" style="display:none">
+    <div>
+      <div class="cover-top">
+        <div class="cover-doc-no">${DOC_NO} ／ ${DOC_REV} ／ 生效日期：${DOC_DATE}</div>
+        <div class="cover-title">參展觀摩評分表<br>Exhibition Observation Scoring Form</div>
+        <div class="cover-subtitle">TMTS 2026 台灣國際工具機展 · 台中國際展覽館</div>
+      </div>
+
+      <div class="cover-info-grid">
+        <div class="cover-info-item">
+          <div class="cover-info-label">觀摩攤位 / 公司名稱</div>
+          <div class="cover-info-value" id="cv-booth-${id}">${esc(d.name)}</div>
+        </div>
+        <div class="cover-info-item">
+          <div class="cover-info-label">填表日期</div>
+          <div class="cover-info-value" id="cv-date-${id}">${d.date}</div>
+        </div>
+        <div class="cover-info-item">
+          <div class="cover-info-label">填表人</div>
+          <div class="cover-info-value" id="cv-author-${id}">${esc(d.author) || '—'}</div>
+        </div>
+        <div class="cover-info-item">
+          <div class="cover-info-label">所屬部門</div>
+          <div class="cover-info-value" id="cv-dept-${id}">${esc(d.dept) || '—'}</div>
+        </div>
+        <div class="cover-info-item">
+          <div class="cover-info-label">總評分</div>
+          <div class="cover-info-value" id="cv-score-${id}" style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;color:#D85A30">0 / 100</div>
+        </div>
+        <div class="cover-info-item">
+          <div class="cover-info-label">文件編號</div>
+          <div class="cover-info-value" style="font-family:'JetBrains Mono',monospace">${DOC_NO}</div>
+        </div>
+      </div>
+
+      <table class="cover-sign-table">
+        <thead>
+          <tr>
+            <th style="width:33%">制定 Prepared by</th>
+            <th style="width:33%">審查 Reviewed by</th>
+            <th style="width:33%">核准 Approved by</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="sign-name" id="sign-author-${id}">${esc(d.author)}</div>
+              <div class="sign-line"></div>
+              <div class="sign-date">日期：________________</div>
+            </td>
+            <td>
+              <div class="sign-name"></div>
+              <div class="sign-line"></div>
+              <div class="sign-date">日期：________________</div>
+            </td>
+            <td>
+              <div class="sign-name"></div>
+              <div class="sign-line"></div>
+              <div class="sign-date">日期：________________</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="cover-clause-box">
+        <div class="cover-clause-title">ISO 9001:2015 條文對應</div>
+        <div class="cover-clause-row">
+          <div class="cover-clause-no">7.5</div>
+          <div class="cover-clause-desc">文件化資訊 — 本表單為受管制之品質記錄文件，須依程序保存與管制。</div>
+        </div>
+        <div class="cover-clause-row">
+          <div class="cover-clause-no">8.4</div>
+          <div class="cover-clause-desc">外部提供之過程、產品及服務的管制 — 評分結果可作為競業分析與外部供應商評估的參考依據。</div>
+        </div>
+        <div class="cover-clause-row">
+          <div class="cover-clause-no">9.1.3</div>
+          <div class="cover-clause-desc">分析與評估 — 本表單數據作為市場情報分析的輸入資料，支持管理階層審查。</div>
+        </div>
+        <div class="cover-clause-row">
+          <div class="cover-clause-no">10.3</div>
+          <div class="cover-clause-desc">持續改善 — 觀摩啟發欄位之填寫，作為識別改善機會的正式記錄。</div>
+        </div>
+      </div>
+    </div>
+    <div class="cover-footer">${DOC_NO} ${DOC_REV} · 本文件為受管制文件，請確認使用最新版本 · 第 1 頁</div>
+  </div>`;
+
+  // ── PRINT CONTENT HEADER (hidden on screen) ──
+  html += `
+  <div class="print-content-header" style="display:none">
+    <div class="pch-left">
+      <div class="pch-title" id="pch-name-${id}">${esc(d.name)}</div>
+      <div class="pch-meta" id="pch-meta-${id}">TMTS 2026 · 參展觀摩評分表 · ${DOC_NO} ${DOC_REV} · 填表人：${esc(d.author) || '—'} · ${d.date}</div>
+    </div>
+    <div class="pch-right">
+      <div class="pch-score" id="pch-score-${id}">0 / 100</div>
+      <div class="pch-score-lbl">總評分</div>
+    </div>
+  </div>`;
+
+  // ── SCREEN HEADER ──
+  html += `
+  <div class="sheet-header">
+    <div style="flex:1">
+      <div class="sheet-name-label">攤位 / 公司名稱</div>
+      <input class="sheet-name-input" value="${esc(d.name)}"
+        oninput="updateName('${id}',this.value)"
+        placeholder="輸入攤位名稱" />
+    </div>
+    <div class="score-card">
+      <div class="score-big" id="sbig-${id}">0</div>
+      <div class="score-max">/ ${MAX_SCORE} 分</div>
+      <div class="score-label" id="slabel-${id}">尚未開始評分</div>
+      <div class="score-bar-outer"><div class="score-bar-inner" id="sbar-${id}" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="iso-meta-bar">
+    <div class="iso-field">
+      <label>填表人</label>
+      <input type="text" id="iso-author-${id}" value="${esc(d.author)}" placeholder="填表人姓名"
+        oninput="updateAuthor('${id}',this.value)" />
+    </div>
+    <div class="iso-field">
+      <label>所屬部門</label>
+      <input type="text" id="iso-dept-${id}" value="${esc(d.dept)}" placeholder="所屬部門（選填）"
+        oninput="updateDept('${id}',this.value)" />
+    </div>
+    <div class="iso-field">
+      <label>填表日期</label>
+      <input type="text" id="iso-date-${id}" value="${d.date}" placeholder="填表日期"
+        oninput="updateDate('${id}',this.value)" />
+    </div>
+    <div class="iso-field">
+      <label>文件編號 / 版次</label>
+      <span>${DOC_NO}　${DOC_REV}</span>
+    </div>
+  </div>`;
+
+  // ── QUESTIONS ──
+  let qIdx = 0;
+  QUESTIONS.forEach((sec, si) => {
+    html += `
+    <div class="section-block">
+      <div class="section-head">
+        <span class="cat-badge" style="background:${sec.bg};color:${sec.color}">${sec.section}</span>
+        <span class="section-title-text">${sec.section}</span>
+        <span class="section-avg" id="savg-${id}-${si}">平均 — 分</span>
+      </div>`;
+    sec.items.forEach((item, qi) => {
+      const k = `${si}_${qi}`;
+      qIdx++;
+      html += `
+      <div class="q-row" id="qrow-${id}-${k}">
+        <div class="q-top">
+          <div>
+            <div class="q-text">${esc(item.q)}</div>
+            <div class="q-hint">${esc(item.hint)}</div>
+          </div>
+          <div class="q-num">Q${qIdx}</div>
+        </div>
+        <div class="stars" id="stars-${id}-${k}">
+          <span class="star-zero" id="zero-${id}-${k}" onclick="setScore('${id}','${k}',0,${si})">0</span>
+          ${[1,2,3,4].map(v=>`<span class="star" data-val="${v}"
+            onclick="setScore('${id}','${k}',${v},${si})"
+            onmouseover="hoverStars('${id}','${k}',${v})"
+            onmouseout="unhoverStars('${id}','${k}')">★</span>`).join('')}
+          <span class="star-label" id="slb-${id}-${k}">請評分</span>
+        </div>
+        <textarea class="q-note" placeholder="備註（選填）..." rows="1"
+          oninput="saveNote('${id}','${k}',this.value);autoResize(this)"
+        ></textarea>
+        <div class="print-note" id="pn-${id}-${k}" style="display:none"></div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  // print page footer
+  html += `
+  <div class="print-page-footer" style="display:none">
+    <span>${DOC_NO} ${DOC_REV} · 本文件為受管制文件</span>
+    <span>填表人：${esc(d.author)} · ${d.date}</span>
+  </div>
+  <div style="display:flex;justify-content:flex-end;padding:0.5rem 0 2rem" class="no-print">
+    <button class="delete-btn" onclick="confirmDelete('${id}')">刪除此攤位記錄</button>
+  </div>`;
+
+  el.innerHTML = html;
+  document.getElementById('sheets').appendChild(el);
+}
+
+function updateName(id, val) {
+  sheets[id].name = val;
+  updateTabName(id, val);
+  const cvb  = document.getElementById(`cv-booth-${id}`);
+  const pchn = document.getElementById(`pch-name-${id}`);
+  if (cvb)  cvb.textContent  = val || '新攤位';
+  if (pchn) pchn.textContent = val || '新攤位';
+  updateOverview();
+}
+
+function updateAuthor(id, val) {
+  sheets[id].author = val;
+  const cvA   = document.getElementById(`cv-author-${id}`);
+  const signA = document.getElementById(`sign-author-${id}`);
+  const pchm  = document.getElementById(`pch-meta-${id}`);
+  if (cvA)   cvA.textContent   = val || '—';
+  if (signA) signA.textContent = val;
+  if (pchm)  pchm.textContent  = buildMetaStr(id);
+  updateOverview();
+}
+
+function updateDept(id, val) {
+  sheets[id].dept = val;
+  const cvD  = document.getElementById(`cv-dept-${id}`);
+  const pchm = document.getElementById(`pch-meta-${id}`);
+  if (cvD)  cvD.textContent  = val || '—';
+  if (pchm) pchm.textContent = buildMetaStr(id);
+  updateOverview();
+}
+
+function updateDate(id, val) {
+  sheets[id].date = val;
+  const cvDt = document.getElementById(`cv-date-${id}`);
+  const pchm = document.getElementById(`pch-meta-${id}`);
+  if (cvDt)  cvDt.textContent  = val || '—';
+  if (pchm)  pchm.textContent  = buildMetaStr(id);
+}
+
+function buildMetaStr(id) {
+  const d = sheets[id];
+  return `TMTS 2026 · 參展觀摩評分表 · ${DOC_NO} ${DOC_REV} · 填表人：${d.author || '—'}${d.dept ? ' · ' + d.dept : ''} · ${d.date || '—'}`;
+}
+
+function setScore(id, k, val, si) {
+  sheets[id].scores[k] = val;
+  renderStars(id, k, val);
+  const lbl = document.getElementById(`slb-${id}-${k}`);
+  if (lbl) lbl.textContent = STAR_LABELS[val];
+  const row = document.getElementById(`qrow-${id}-${k}`);
+  if (row) row.classList.remove('missing');
+  updateScore(id);
+  updateSectionAvg(id, si);
+}
+
+function renderStars(id, k, val) {
+  const zero = document.getElementById(`zero-${id}-${k}`);
+  if (zero) zero.classList.toggle('active', val === 0);
+  const c = document.getElementById(`stars-${id}-${k}`);
+  if (!c) return;
+  c.querySelectorAll('.star').forEach(s => s.classList.toggle('lit', parseInt(s.dataset.val) <= val));
+}
+function hoverStars(id, k, val) {
+  const c = document.getElementById(`stars-${id}-${k}`);
+  if (!c) return;
+  c.querySelectorAll('.star').forEach(s => {
+    s.style.color = parseInt(s.dataset.val) <= val ? 'var(--star)' : 'var(--star-empty)';
+  });
+}
+function unhoverStars(id, k) {
+  const cur = sheets[id].scores[k];
+  if (cur === undefined) {
+    const c = document.getElementById(`stars-${id}-${k}`);
+    if (c) c.querySelectorAll('.star').forEach(s => s.style.color = '');
+  } else { renderStars(id, k, cur); }
+}
+
+function saveNote(id, k, val) {
+  sheets[id].notes[k] = val;
+  const pn = document.getElementById(`pn-${id}-${k}`);
+  if (!pn) return;
+  if (val.trim()) { pn.textContent = val.trim(); pn.style.display = 'block'; }
+  else { pn.textContent = ''; pn.style.display = 'none'; }
+}
+function autoResize(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
+
+function updateScore(id) {
+  const scores = sheets[id].scores;
+  const answered = Object.keys(scores).length;
+  const total = Object.values(scores).reduce((a, b) => a + b, 0);
+  const pct = (total / MAX_SCORE * 100).toFixed(0);
+  ['sbig','sbar','slabel','ts','pscore'].forEach(x => {});
+  const sbig   = document.getElementById(`sbig-${id}`);
+  const sbar   = document.getElementById(`sbar-${id}`);
+  const slabel = document.getElementById(`slabel-${id}`);
+  const ts     = document.getElementById(`ts-${id}`);
+  const cvs    = document.getElementById(`cv-score-${id}`);
+  const pchs   = document.getElementById(`pch-score-${id}`);
+  if (sbig)   sbig.textContent   = total;
+  if (sbar)   sbar.style.width   = pct + '%';
+  if (slabel) slabel.textContent = `已評 ${answered} / ${TOTAL_Q} 題`;
+  if (ts)     ts.textContent     = `${total}/100`;
+  if (cvs)    cvs.textContent    = `${total} / 100`;
+  if (pchs)   pchs.textContent   = `${total} / 100`;
+  updateOverview();
+}
+
+function updateSectionAvg(id, si) {
+  const sec = QUESTIONS[si];
+  let sum = 0, cnt = 0;
+  sec.items.forEach((item, qi) => {
+    const v = sheets[id].scores[`${si}_${qi}`];
+    if (v !== undefined) { sum += v; cnt++; }
+  });
+  const el = document.getElementById(`savg-${id}-${si}`);
+  if (el) el.textContent = cnt ? `平均 ${(sum / cnt).toFixed(1)} 分` : '平均 — 分';
+}
+
+function updateTabName(id, name) {
+  const t = document.querySelector(`.tab[data-id="${id}"] .tab-label`);
+  if (t) t.textContent = name;
+}
+
+function switchTab(id) {
+  currentTab = id;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('active'));
+  document.querySelector(`.tab[data-id="${id}"]`).classList.add('active');
+  document.getElementById(`sheet-${id}`).classList.add('active');
+}
+
+function updateOverview() {
+  const grid = document.getElementById('overviewGrid');
+  grid.innerHTML = '';
+  if (!tabOrder.length) {
+    grid.innerHTML = `<div style="border:2px dashed var(--border);border-radius:12px;padding:2rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;color:var(--text3);min-height:130px;transition:border-color 0.15s" onclick="createSheet()" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'"><div style="font-size:28px">＋</div><div style="font-size:13px">新增第一間攤位</div></div>`;
+    return;
+  }
+  const sorted = [...tabOrder].sort((a, b) => {
+    const sa = Object.values(sheets[a]?.scores||{}).reduce((x,y)=>x+y,0);
+    const sb = Object.values(sheets[b]?.scores||{}).reduce((x,y)=>x+y,0);
+    return sb - sa;
+  });
+  sorted.forEach((id, rank) => {
+    const d = sheets[id]; if (!d) return;
+    const total    = Object.values(d.scores).reduce((a,b)=>a+b,0);
+    const answered = Object.keys(d.scores).length;
+    const pct      = (total/MAX_SCORE*100).toFixed(0);
+    const rankBadge = tabOrder.length > 1
+      ? `<span style="font-size:11px;color:var(--text3);margin-left:6px;font-family:'JetBrains Mono',monospace">#${rank+1}</span>` : '';
+    const c = document.createElement('div');
+    c.className = 'overview-card'; c.onclick = () => switchTab(id);
+    c.innerHTML = `
+      <div class="ov-name">${esc(d.name)}${rankBadge}</div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:4px">${esc(d.author)}${d.dept?' · '+esc(d.dept):''}</div>
+      <div style="display:flex;align-items:baseline;gap:4px">
+        <div class="ov-total">${total}</div>
+        <div class="ov-max">/ ${MAX_SCORE} 分</div>
+      </div>
+      <div class="ov-answered">${answered} / ${TOTAL_Q} 題已評分</div>
+      <div class="ov-bar-outer"><div class="ov-bar-inner" style="width:${pct}%"></div></div>`;
+    grid.appendChild(c);
+  });
+  const add = document.createElement('div');
+  add.style.cssText = 'border:2px dashed var(--border);border-radius:12px;padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;color:var(--text3);transition:border-color 0.15s';
+  add.innerHTML = '<div style="font-size:24px">＋</div><div style="font-size:12px">新增攤位</div>';
+  add.onclick = createSheet;
+  add.onmouseover = () => add.style.borderColor = 'var(--accent)';
+  add.onmouseout  = () => add.style.borderColor = 'var(--border)';
+  grid.appendChild(add);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function printCurrent() {
+  if (currentTab === 'overview') { showToast('請先切換到某個攤位分頁，再列印。'); return; }
+  const missing = [];
+  QUESTIONS.forEach((sec, si) => {
+    sec.items.forEach((item, qi) => {
+      if (sheets[currentTab].scores[`${si}_${qi}`] === undefined) missing.push(`${si}_${qi}`);
+    });
+  });
+  if (missing.length) {
+    missing.forEach(k => {
+      const row = document.getElementById(`qrow-${currentTab}-${k}`);
+      if (row) row.classList.add('missing');
+    });
+    showToast(`還有 ${missing.length} 題尚未評分，請全部填完再列印`);
+    const firstRow = document.getElementById(`qrow-${currentTab}-${missing[0]}`);
+    if (firstRow) firstRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+  document.querySelectorAll('.sheet').forEach(s => s.classList.remove('print-target'));
+  document.getElementById(`sheet-${currentTab}`).classList.add('print-target');
+  window.print();
+}
+
+function confirmDelete(id) {
+  if (!confirm(`確定要刪除「${sheets[id].name}」的記錄？`)) return;
+  delete sheets[id];
+  tabOrder = tabOrder.filter(t => t !== id);
+  document.querySelector(`.tab[data-id="${id}"]`).remove();
+  document.getElementById(`sheet-${id}`).remove();
+  switchTab('overview');
+  updateOverview();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// 無 modal，不需要點擊關閉事件
+</script>
+</body>
+</html>
